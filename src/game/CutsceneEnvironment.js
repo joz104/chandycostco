@@ -1,47 +1,45 @@
 /**
  * CutsceneEnvironment - Creates themed background scenery for each cutscene
  * Uses Three.js primitives to maintain the game's low-poly aesthetic
+ *
+ * This module now delegates to the modular level system in src/levels/
+ * while maintaining backwards compatibility with existing code.
  */
 
 import * as THREE from 'three';
+import {
+    createCutsceneEnvironment as createLevelEnvironment,
+    updateAnimations as updateLevelAnimations,
+    getLevelModule
+} from '../levels/index.js';
 
 // Storage for active environment objects
 let activeEnvironmentObjects = [];
 let animatedElements = [];
+let currentLevelIndex = null;
 
 /**
  * Create cutscene environment based on level ID
- * @param {number} levelId - The level ID (1-5, or 'intro'/'costco')
+ * @param {number} levelId - The level ID (0-4, or 'costco'/'costco-exterior')
  * @param {THREE.Scene} scene - The Three.js scene
  */
 export function createCutsceneEnvironment(levelId, scene) {
     // Clear any existing environment
     removeCutsceneEnvironment(scene);
 
-    switch (levelId) {
-        case 0:
-            createHomeTownEnvironment(scene);
-            break;
-        case 1:
-            createDesertEnvironment(scene);
-            break;
-        case 2:
-            createRioGrandeEnvironment(scene);
-            break;
-        case 3:
-            createWallEnvironment(scene);
-            break;
-        case 4:
-            createSuburbiaEnvironment(scene);
-            break;
-        case 'costco':
-            createCostcoEnvironment(scene);
-            break;
-        case 'costco-exterior':
-            createCostcoExteriorEnvironment(scene);
-            break;
-        default:
-            console.warn(`No environment defined for level ${levelId}`);
+    // Store current level for animation updates
+    currentLevelIndex = levelId;
+
+    // Use the new modular level system
+    const result = createLevelEnvironment(levelId, scene);
+
+    if (result && result.group) {
+        scene.add(result.group);
+        activeEnvironmentObjects.push(result.group);
+
+        if (result.animatedElements) {
+            animatedElements = result.animatedElements;
+        }
     }
 }
 
@@ -73,25 +71,26 @@ export function removeCutsceneEnvironment(scene) {
  * @param {number} deltaTime - Time elapsed since last frame in seconds
  */
 export function updateCutsceneEnvironment(deltaTime) {
-    const time = Date.now() * 0.001; // Convert to seconds
+    // Delegate to the level-specific animation update
+    if (currentLevelIndex !== null && typeof currentLevelIndex === 'number') {
+        updateLevelAnimations(currentLevelIndex, animatedElements, deltaTime);
+    }
+
+    // Fallback: handle common animation types for backwards compatibility
+    const time = Date.now() * 0.001;
 
     animatedElements.forEach(element => {
         if (element.type === 'water') {
-            // Animate water ripples
             updateWaterRipples(element.mesh, time);
         } else if (element.type === 'searchlight') {
-            // Rotate searchlight beams (use custom speed if available)
             const speed = element.speed || 0.3;
             element.mesh.rotation.y += deltaTime * speed;
         } else if (element.type === 'heatWave') {
-            // Heat shimmer effect
             element.mesh.position.y = Math.sin(time * 2 + element.offset) * 0.3;
             element.mesh.material.opacity = 0.1 + Math.sin(time * 3 + element.offset) * 0.05;
         } else if (element.type === 'reed') {
-            // Sway reeds
             element.mesh.rotation.z = Math.sin(time * 1.5 + element.offset) * 0.15;
         } else if (element.type === 'warningLight') {
-            // Pulsing red warning light
             const pulse = (Math.sin(time * 4) + 1) / 2;
             element.mesh.material.opacity = 0.5 + pulse * 0.5;
             element.mesh.scale.setScalar(0.8 + pulse * 0.4);

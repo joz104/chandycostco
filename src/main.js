@@ -27,9 +27,17 @@ import SoundManager from './audio/SoundManager.js';
 // Expose CutsceneEnvironment for debugging/screenshots
 window.CutsceneEnvironment = CutsceneEnvironment;
 
-// Data
-import { LEVELS, getLevel, getLevelCount } from './data/levels.js';
-import { DIALOGUE_ENDING, DIALOGUE_ENDING_HAPPY } from './data/dialogue.js';
+// Level System (refactored modular levels)
+import {
+    getLevel,
+    getLevelCount,
+    getLevelModule,
+    createCutsceneEnvironment as createLevelCutsceneEnvironment,
+    spawnDecoration as spawnLevelDecoration,
+    updateAnimations as updateLevelAnimations,
+    DIALOGUE_ENDING,
+    DIALOGUE_ENDING_HAPPY
+} from './levels/index.js';
 import {
     LANE_WIDTH,
     OBSTACLE_SPAWN_Z,
@@ -417,58 +425,18 @@ function spawnGroundChunk(zPosition) {
 }
 
 /**
- * Spawn decoration based on level
+ * Spawn decoration based on level (now delegates to level modules)
  */
 function spawnDecoration(zPos, levelIdx) {
     const scene = SceneManager.getScene();
     const { Materials } = SceneManager;
 
-    if (levelIdx < 2) {
-        // Cactus for home/desert
-        const h = Math.random() * 2 + 1;
-        const cactusGeo = new THREE.BoxGeometry(0.5, h, 0.5);
-        const cactusMat = new THREE.MeshStandardMaterial({ color: 0x2E8B57 });
-        const cactus = new THREE.Mesh(cactusGeo, cactusMat);
+    // Use the new level-specific decoration spawning
+    const decoration = spawnLevelDecoration(levelIdx, scene, zPos, Materials);
 
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.4, 0.4), cactusMat);
-        arm.position.y = h * 0.3;
-        cactus.add(arm);
-
-        cactus.position.set(
-            (Math.random() > 0.5 ? 1 : -1) * (8 + Math.random() * 8),
-            h / 2,
-            zPos + Math.random() * 10 - 5
-        );
-        cactus.castShadow = true;
-
-        scene.add(cactus);
-        decorations.push(cactus);
-    } else if (levelIdx === 4) {
-        // Houses for suburbia
-        const houseGroup = new THREE.Group();
-
-        const walls = new THREE.Mesh(
-            new THREE.BoxGeometry(6, 4, 6),
-            Math.random() > 0.5 ? Materials.HOUSE_WALL_1 : Materials.HOUSE_WALL_2
-        );
-        walls.position.y = 2.1;
-        houseGroup.add(walls);
-
-        const roof = new THREE.Mesh(new THREE.ConeGeometry(5, 2, 4), Materials.HOUSE_ROOF);
-        roof.position.y = 5;
-        roof.rotation.y = Math.PI / 4;
-        houseGroup.add(roof);
-
-        const door = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.2), Materials.HOUSE_DOOR);
-        door.position.set(0, 1, 3);
-        houseGroup.add(door);
-
-        const side = Math.random() > 0.5 ? 1 : -1;
-        houseGroup.position.set(side * (18 + Math.random() * 2), 0, zPos);
-        houseGroup.rotation.y = side === 1 ? -Math.PI / 2 : Math.PI / 2;
-
-        scene.add(houseGroup);
-        decorations.push(houseGroup);
+    if (decoration) {
+        scene.add(decoration);
+        decorations.push(decoration);
     }
 }
 
