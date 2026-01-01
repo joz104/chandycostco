@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chandler's Freedom Glizzy Run vFinal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Press Start 2P', cursive; user-select: none; -webkit-user-select: none; }
+        
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; z-index: 10; }
+        
+        .hud { padding: 20px; display: flex; justify-content: space-between; color: white; text-shadow: 2px 2px 0 #000; font-size: 14px; width: 90%; margin: 0 auto; }
+        .hud-box { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; border: 2px solid #fff; display: flex; flex-direction: column; align-items: center; min-width: 120px; }
+        .stat-label { color: #aaa; font-size: 10px; margin-bottom: 5px; }
+        #lives-display { font-size: 20px; letter-spacing: 5px; margin-top: 5px; }
+
+        .speech-bubble { position: absolute; background: #fff; color: #000; padding: 15px; border-radius: 15px; font-size: 12px; max-width: 200px; text-align: center; border: 3px solid #000; transform: translate(-50%, -100%); pointer-events: auto; z-index: 100; display: none; box-shadow: 5px 5px 0 rgba(0,0,0,0.2); line-height: 1.4; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { opacity: 0; transform: translate(-50%, -80%) scale(0.5); } 100% { opacity: 1; transform: translate(-50%, -100%) scale(1); } }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; margin-left: -10px; border-width: 10px 10px 0; border-style: solid; border-color: #000 transparent; }
+
+        #cutscene-ui { position: absolute; bottom: 10%; width: 100%; text-align: center; pointer-events: none; z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .auto-indicator { color: #00ff00; font-size: 10px; text-shadow: 1px 1px 0 #000; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 20px; }
+        .tap-hint { color: #fff; font-size: 12px; animation: blink 1s infinite; text-shadow: 2px 2px 0 #000; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        
+        #interaction-prompt { position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); color: #ffff00; padding: 20px 40px; border: 4px solid #fff; font-size: 20px; z-index: 100; animation: pulse 0.5s infinite alternate; display: none; }
+        @keyframes pulse { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.1); } }
+
+        .screen-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; background: rgba(0, 0, 0, 0.9); padding: 40px; border: 4px solid #fff; border-radius: 10px; pointer-events: auto; display: flex; flex-direction: column; gap: 15px; box-shadow: 15px 15px 0 rgba(0,0,0,0.5); min-width: 320px; z-index: 30; }
+        h1 { color: #ffcc00; text-shadow: 4px 4px 0 #cc3300; margin: 0 0 10px 0; font-size: 24px; line-height: 1.5; }
+        .controls-hint { color: #f0d5b9; background: #333; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 10px; }
+        .key { color: #ffcc00; border: 1px solid #666; padding: 2px 4px; border-radius: 3px; }
+        .main-btn { background: #ff4500; border: none; padding: 15px 30px; color: white; font-family: 'Press Start 2P', cursive; font-size: 14px; cursor: pointer; margin-top: 20px; border-radius: 4px; box-shadow: 0 4px 0 #992200; }
+        .main-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #992200; }
+        .hidden { display: none !important; }
+        
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 20px; }
+        .popup-text { position: absolute; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000; pointer-events: none; animation: floatUp 1s forwards; z-index: 15; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
+
+        #fuego-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 10px solid red; box-sizing: border-box; pointer-events: none; opacity: 0; transition: opacity 0.2s; box-shadow: inset 0 0 50px red; z-index: 10; }
+        .fuego-active { opacity: 1 !important; animation: pulseRed 0.5s infinite; }
+        @keyframes pulseRed { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        #damage-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.3); pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 11; }
+        .damage-active { opacity: 1 !important; }
+        #level-progress { width: 100%; height: 10px; background: #333; margin-top: 10px; }
+        #progress-fill { height: 100%; background: #00ff00; width: 0%; transition: width 0.2s; }
+
+        #dev-layer { position: absolute; top: 10px; right: 10px; z-index: 200; text-align: right; }
+        .dev-menu { display: flex; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.8); padding: 10px; border: 1px solid #fff; margin-top: 5px; }
+        .dev-btn { background: #333; color: #fff; border: 1px solid #777; font-family: 'Press Start 2P', cursive; font-size: 8px; padding: 8px; cursor: pointer; text-align: left; }
+        .dev-btn:hover { background: #555; color: #ffcc00; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="loading">Loading Chandler's Journey...</div>
+    <div id="fuego-overlay"></div>
+    <div id="damage-overlay"></div>
+
+    <div id="dev-layer">
+        <button id="debug-toggle-btn" class="dev-btn">🛠️ DEV MENU</button>
+        <div id="debug-menu-box" class="dev-menu hidden">
+            <button class="dev-btn" id="dev-btn-0">1. Intro (Home)</button>
+            <button class="dev-btn" id="dev-btn-1">2. Desert (Coyote)</button>
+            <button class="dev-btn" id="dev-btn-2">3. River (Gator)</button>
+            <button class="dev-btn" id="dev-btn-3">4. The Wall (Border)</button>
+            <button class="dev-btn" id="dev-btn-4">5. Suburbia (Street)</button>
+            <button class="dev-btn" id="dev-btn-end" style="color: #00ff00;">6. Jump to Ending</button>
+        </div>
+    </div>
+
+    <div id="bubble-container"></div>
+    <div id="cutscene-ui" class="hidden">
+        <div class="auto-indicator">AUTO PLAYING</div>
+        <div class="tap-hint">TAP TO SPEED UP ▶</div>
+    </div>
+    <div id="interaction-prompt">PRESS [E] TO ORDER</div>
+
+    <div id="ui-layer" class="hidden">
+        <div class="hud">
+            <div class="hud-box">
+                <div class="stat-label">CHAPTER</div>
+                <div id="level-display" style="color: #FFD700">1: THE VILLAGE</div>
+                <div id="level-progress"><div id="progress-fill"></div></div>
+            </div>
+            <div class="hud-box">
+                <div class="stat-label">LIVES</div>
+                <div id="lives-display">❤️❤️❤️</div>
+            </div>
+            <div class="hud-box" id="score-container">
+                <div class="stat-label">DISTANCE</div>
+                <div id="score-display">0m</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="start-screen" class="screen-modal hidden">
+        <h1>CHANDLER'S RUN</h1>
+        <p>Quest for the Freedom Glizzy</p>
+        <div class="controls-hint">
+            <p><span class="key">A</span> <span class="key">D</span> Dodge</p>
+            <p><span class="key">W</span> Jump (x2) | <span class="key">S</span> Slide</p>
+        </div>
+        <p style="color: #aaa; font-size: 10px; margin-top:10px;">Avoid La Migra & Walls!</p>
+        <button id="start-btn" class="main-btn">START STORY</button>
+    </div>
+
+    <div id="game-over-screen" class="screen-modal hidden">
+        <h1 style="color: #ff4444;">CAUGHT!</h1>
+        <p id="final-reason" style="color:#aaa; font-size:10px;">You ran out of lives.</p>
+        <p style="margin-top:10px">No Glizzy for you today.</p>
+        <button id="restart-btn" class="main-btn">TRY AGAIN</button>
+    </div>
+
+    <div id="victory-screen" class="screen-modal hidden">
+        <h1 style="color: #ff4444;">EJECTED!</h1>
+        <div style="font-size:40px; margin: 10px;">👮‍♂️🚫</div>
+        <p>Security dragged you out.</p>
+        <p style="font-size:10px; color:#aaa; margin-top:5px;">You were 25 cents short.</p>
+        <button id="restart-victory-btn" class="main-btn">CRY & RESTART</button>
+    </div>
+
+    <script>
+    (function() { 
+        // --- Constants & Game Data ---
+        var DIALOGUE_INTRO = [
+            { speaker: "Chandler", text: "Mama... I have to go. The village has no hotdogs left.", delay: 3000 },
+            { speaker: "Mama", text: "Oh, mi hijo. You go to the North? To the land of Costco?", delay: 3000 },
+            { speaker: "Chandler", text: "Si. I dream of the Freedom Glizzy. $1.50 with a soda.", delay: 3500 },
+            { speaker: "Mama", text: "It is dangerous! The Wall... The ICE... The heat!", delay: 3000 },
+            { speaker: "Chandler", text: "I am fast, Mama. Like the wind.", delay: 2500 },
+            { speaker: "Mama", text: "Take these flip-flops. And do not forget who you are.", delay: 3500 },
+            { speaker: "Chandler", text: "Adios, Mama. I will bring you back a churro.", delay: 2000 }
+        ];
+
+        var DIALOGUE_L2 = [
+            { speaker: "Chandler", text: "Phew! The desert. It is so quiet...", delay: 3000 },
+            { speaker: "Coyote", text: "Turn back, little one. The heat takes everyone.", delay: 3000 },
+            { speaker: "Chandler", text: "A talking Coyote?! Am I hallucinating?", delay: 3000 },
+            { speaker: "Coyote", text: "Maybe. Or maybe I am ICE in disguise. Awoooo!", delay: 3000 },
+            { speaker: "Chandler", text: "I don't care! I have a coupon!", delay: 2000 }
+        ];
+
+        var DIALOGUE_L3 = [
+            { speaker: "Chandler", text: "The River! I must cross before...", delay: 2500 },
+            { speaker: "Alligator", text: "SNAP SNAP. Tasty toes.", delay: 3000, action: "gator_snap" },
+            { speaker: "Chandler", text: "Please Mr. Gator, I am just passing through!", delay: 3000 },
+            { speaker: "Alligator", text: "The toll is one leg. Or a chicken nugget.", delay: 3000 },
+            { speaker: "Chandler", text: "I need my legs! See ya later alligator!", delay: 2000 }
+        ];
+
+        var DIALOGUE_L4 = [
+            { speaker: "Chandler", text: "Ay caramba! The Wall! It is huge!", delay: 3000 },
+            { speaker: "Agent", text: "HALT! RESTRICTED AREA! TURN BACK!", delay: 3000, action: "agent_scan" },
+            { speaker: "Chandler", text: "I cannot! The coupon expires tomorrow!", delay: 3000 },
+            { speaker: "Agent", text: "Deploying searchlights! Release the drones!", delay: 3000, action: "deploy_drones" },
+            { speaker: "Chandler", text: "You cannot stop the hunger of a free man!", delay: 2500 }
+        ];
+
+        var DIALOGUE_L5 = [
+            { speaker: "Chandler", text: "I made it! The street... it is so grey!", delay: 3000, action: "phone_call" },
+            { speaker: "Mama", text: "Mijo! Can you see it? The Costco sign!", delay: 3000 },
+            { speaker: "Chandler", text: "Mama? Is that you?", delay: 2500, action: "phone_call" },
+            { speaker: "Mama", text: "I am with you in spirit. Run to the Glizzy!", delay: 3000 },
+            { speaker: "Chandler", text: "I CAN TASTE THE RELISH!", delay: 2000, action: "phone_call" }
+        ];
+
+        var DIALOGUE_ENDING = [
+            { speaker: "Chandler", text: "One Glizzy Combo please. Extra mustard.", delay: 3000 },
+            { speaker: "Cashier", text: "That'll be $1.50. Cash or card?", delay: 3000 },
+            { speaker: "Chandler", text: "Cash. I have it right here...", delay: 2000, action: "check_pockets" },
+            { speaker: "Chandler", text: "Wait... one, two, three quarters... one dollar... twenty five...", delay: 4000 },
+            { speaker: "Chandler", text: "NO! I LOST A QUARTER IN THE RIVER!", delay: 3000, action: "shock" },
+            { speaker: "Cashier", text: "You have $1.25? The price is $1.50.", delay: 3000 },
+            { speaker: "Chandler", text: "Please! I ran all the way from Mexico!", delay: 3000 },
+            { speaker: "Cashier", text: "Store policy. No money, no Glizzy.", delay: 3000 },
+            { speaker: "Cashier", text: "SECURITY! REMOVE THIS MAN!", delay: 2000, action: "call_security" }
+        ];
+
+        var LEVELS = [
+            { id: 1, name: "HOME TOWN", length: 1000, color: 0xD2B48C, fog: 0xD2B48C, speed: 18, groundColor: 0xE3C988, cutscene: DIALOGUE_INTRO, npc: 'mom' },
+            { id: 2, name: "THE DESERT", length: 2000, color: 0xFF8C00, fog: 0xFF8C00, speed: 20, groundColor: 0xCD853F, cutscene: DIALOGUE_L2, npc: 'coyote' },
+            { id: 3, name: "RIO GRANDE", length: 3000, color: 0x4682B4, fog: 0x4682B4, speed: 22, groundColor: 0x2F4F4F, cutscene: DIALOGUE_L3, npc: 'alligator' },
+            { id: 4, name: "THE WALL", length: 4000, color: 0x101030, fog: 0x101030, speed: 25, groundColor: 0x5d4037, cutscene: DIALOGUE_L4, npc: 'agent' }, 
+            { id: 5, name: "SUBURBIA", length: 5000, color: 0x87CEEB, fog: 0xFFFFFF, speed: 30, groundColor: 0x333333, cutscene: DIALOGUE_L5, npc: 'mom' }
+        ];
+
+        // Global variables
+        var scene, camera, renderer;
+        var player, playerMeshGroup;
+        var mama, mamaMeshGroup;
+        var coyote, coyoteMeshGroup;
+        var alligator, alligatorMeshGroup;
+        var agent, agentMeshGroup;
+        var cashier, cashierMeshGroup; 
+        var chandlerPhone, mamaThoughtBubble; 
+        var securityL, securityR; 
+        var costcoExteriorGroup = null; 
+        var costcoInteriorGroup = null; 
+        var interiorLights = [];
+        
+        var MAT_ROAD_YELLOW = new THREE.MeshBasicMaterial({color: 0xffcc00});
+        var MAT_ROAD_SIDEWALK = new THREE.MeshLambertMaterial({color: 0x999999});
+        var MAT_HOUSE_WALL_1 = new THREE.MeshStandardMaterial({color: 0xffffcc});
+        var MAT_HOUSE_WALL_2 = new THREE.MeshStandardMaterial({color: 0xffcccc});
+        var MAT_HOUSE_ROOF = new THREE.MeshStandardMaterial({color: 0x8B4513});
+        var MAT_HOUSE_DOOR = new THREE.MeshStandardMaterial({color: 0x444444});
+        var MAT_TREE_TRUNK = new THREE.MeshStandardMaterial({color: 0x8B4513});
+        var MAT_TREE_LEAVES = new THREE.MeshStandardMaterial({color: 0x006400});
+
+        var sun, cityLights; 
+        var animationId, lastTime = 0;
+        var isPlaying = false, isPaused = false, isCutscene = false, isExitingCutscene = false; 
+        var isCostcoEnding = false, isCostcoApproach = false, waitingForOrder = false;
+        var isDraggingOut = false, guardsGrabbed = false; 
+        var score = 0, currentLevelIdx = 0, currentSpeed = 18, lives = 3, damageCooldown = 0;
+        var currentDialogueQueue = [], currentDialogueIndex = 0, activeBubble = null, autoAdvanceTimer = 0; 
+        var obstacles = [], decorations = [], collectibles = [], groundChunks = [], particles = [];
+        var isInvincible = false, invincibilityTimer = 0, targetLane = 0; 
+        var LANE_WIDTH = 4;
+
+        // DOM Elements
+        var uiLayer, startScreen, bubbleContainer, cutsceneUI, interactionPrompt, gameOverScreen, victoryScreen, scoreDisplay, levelDisplay, livesDisplay, progressFill, startBtn, restartBtn, restartVictoryBtn, loadingEl, fuegoOverlay, damageOverlay, debugToggleBtn, debugMenuEl;
+
+        function init() {
+            uiLayer = document.getElementById('ui-layer');
+            startScreen = document.getElementById('start-screen');
+            bubbleContainer = document.getElementById('bubble-container');
+            cutsceneUI = document.getElementById('cutscene-ui');
+            interactionPrompt = document.getElementById('interaction-prompt');
+            gameOverScreen = document.getElementById('game-over-screen');
+            victoryScreen = document.getElementById('victory-screen');
+            scoreDisplay = document.getElementById('score-display');
+            levelDisplay = document.getElementById('level-display');
+            livesDisplay = document.getElementById('lives-display');
+            progressFill = document.getElementById('progress-fill');
+            startBtn = document.getElementById('start-btn');
+            restartBtn = document.getElementById('restart-btn');
+            restartVictoryBtn = document.getElementById('restart-victory-btn');
+            loadingEl = document.getElementById('loading');
+            fuegoOverlay = document.getElementById('fuego-overlay');
+            damageOverlay = document.getElementById('damage-overlay');
+            debugToggleBtn = document.getElementById('debug-toggle-btn');
+            debugMenuEl = document.getElementById('debug-menu-box');
+
+            loadingEl.remove();
+            startScreen.classList.remove('hidden');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(LEVELS[0].color);
+            scene.fog = new THREE.Fog(LEVELS[0].fog, 20, 90);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding; 
+            document.body.appendChild(renderer.domElement);
+
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(-10, 20, 10);
+            dirLight.castShadow = true;
+            dirLight.shadow.bias = -0.0005; 
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            const sunGeo = new THREE.SphereGeometry(5, 32, 32);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
+            sun = new THREE.Mesh(sunGeo, sunMat);
+            sun.position.set(-30, 40, -50);
+            scene.add(sun);
+            
+            const cityGeo = new THREE.BufferGeometry();
+            const cityCount = 200;
+            const cityPos = new Float32Array(cityCount * 3);
+            for(let i=0; i<cityCount*3; i+=3) {
+                cityPos[i] = (Math.random() - 0.5) * 300;   
+                cityPos[i+1] = (Math.random() * 20) - 5;      
+                cityPos[i+2] = -150;                        
+            }
+            cityGeo.setAttribute('position', new THREE.BufferAttribute(cityPos, 3));
+            const cityMat = new THREE.PointsMaterial({color: 0xffffaa, size: 0.5, transparent: true, opacity: 0.8});
+            cityLights = new THREE.Points(cityGeo, cityMat);
+            cityLights.visible = false;
+            scene.add(cityLights);
+
+            createPlayer();
+            createMama();
+            createCoyote();
+            createAlligator();
+            createAgent();
+            createCashier();
+            createSecurity();
+            
+            mama.visible = false; coyote.visible = false; alligator.visible = false; agent.visible = false; cashier.visible = false;
+            if(securityL) securityL.visible = false;
+            if(securityR) securityR.visible = false;
+
+            const phoneGeo = new THREE.BoxGeometry(0.2, 0.4, 0.05);
+            const phoneMat = new THREE.MeshStandardMaterial({color: 0x111111});
+            chandlerPhone = new THREE.Mesh(phoneGeo, phoneMat);
+            chandlerPhone.visible = false;
+            playerMeshGroup.add(chandlerPhone); 
+
+            mamaThoughtBubble = mamaMeshGroup.clone(); 
+            mamaThoughtBubble.traverse(obj => {
+                if (obj.isMesh) {
+                    obj.material = obj.material.clone(); 
+                    obj.material.transparent = true;
+                    obj.material.opacity = 0.7; 
+                    obj.castShadow = false; 
+                }
+            });
+            mamaThoughtBubble.scale.set(0.3, 0.3, 0.3); 
+            mamaThoughtBubble.visible = false;
+            playerMeshGroup.add(mamaThoughtBubble); 
+
+            createGround();
+
+            window.addEventListener('resize', onWindowResize, false);
+            document.addEventListener('keydown', onKeyDown, false);
+            
+            let touchStartX = 0;
+            let touchStartY = 0;
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+                if (isCutscene) advanceDialogue();
+            }, {passive: false});
+            
+            document.addEventListener('mousedown', e => {
+                if (isCutscene) advanceDialogue();
+            });
+            
+            document.addEventListener('touchend', e => {
+                if (isCutscene) return;
+                const touchEndX = e.changedTouches[0].screenX;
+                const touchEndY = e.changedTouches[0].screenY;
+                handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
+            }, {passive: false});
+            
+            if (startBtn) startBtn.addEventListener('click', startGame);
+            if (restartBtn) restartBtn.addEventListener('click', () => location.reload());
+            if (restartVictoryBtn) restartVictoryBtn.addEventListener('click', () => location.reload());
+
+            if (debugToggleBtn && debugMenuEl) {
+                debugToggleBtn.addEventListener('click', () => {
+                    debugMenuEl.classList.toggle('hidden');
+                });
+                
+                for(let i=0; i<5; i++) {
+                    const btn = document.getElementById('dev-btn-' + i);
+                    if(btn) {
+                        (function(idx){
+                             btn.addEventListener('click', () => {
+                                startScreen.classList.add('hidden'); gameOverScreen.classList.add('hidden'); victoryScreen.classList.add('hidden'); debugMenuEl.classList.add('hidden');
+                                currentLevelIdx = idx; lives = 3; updateLivesDisplay(); startCutscene(LEVELS[idx].cutscene);
+                            });
+                        })(i);
+                    }
+                }
+                const endBtn = document.getElementById('dev-btn-end');
+                if (endBtn) {
+                    endBtn.addEventListener('click', () => {
+                         startScreen.classList.add('hidden'); gameOverScreen.classList.add('hidden'); victoryScreen.classList.add('hidden'); debugMenuEl.classList.add('hidden');
+                         currentLevelIdx = 4; lives = 3; updateLivesDisplay(); startCostcoApproach();
+                    });
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function createTextTexture(text, color, bg, font = 'bold 60px Arial') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = bg; 
+            ctx.fillRect(0,0,512,128);
+            ctx.fillStyle = color;
+            ctx.font = font;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 256, 64);
+            const tex = new THREE.CanvasTexture(canvas);
+            return tex;
+        }
+
+        function createFoodCourtSignTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#eeeeee'; ctx.fillRect(0,0,1024,256);
+            ctx.fillStyle = '#e31837'; ctx.fillRect(0,0,1024,50);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 30px Arial'; ctx.fillText("COSTCO FOOD COURT", 20, 35);
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 40px Arial'; 
+            ctx.fillText("HOT DOG COMBO", 50, 120);
+            ctx.fillStyle = '#e31837'; ctx.fillText("$1.50", 50, 170);
+            ctx.fillStyle = '#555555'; ctx.font = '20px Arial'; ctx.fillText("1/4 lb beef + 20oz soda", 50, 200);
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 40px Arial';
+            ctx.fillText("PIZZA SLICE", 400, 120);
+            ctx.fillStyle = '#e31837'; ctx.fillText("$1.99", 400, 170);
+            ctx.fillStyle = '#555555'; ctx.font = '20px Arial'; ctx.fillText("Cheese, Pepperoni, or Combo", 400, 200);
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 40px Arial';
+            ctx.fillText("CHICKEN BAKE", 750, 120);
+            ctx.fillStyle = '#e31837'; ctx.fillText("$3.99", 750, 170);
+            ctx.fillStyle = '#555555'; ctx.font = '20px Arial'; ctx.fillText("Chicken, bacon, caesar dressing", 750, 200);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createPlayer() {
+            player = new THREE.Group(); playerMeshGroup = new THREE.Group(); player.add(playerMeshGroup);
+            const matSkin = new THREE.MeshStandardMaterial({ color: 0xA0522D, roughness: 0.8 });
+            const matPoncho = new THREE.MeshStandardMaterial({ color: 0xB22222, roughness: 0.9 });
+            const matPants = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.9 });
+            const matHat = new THREE.MeshStandardMaterial({ color: 0xF4A460, roughness: 1.0 });
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.7), matSkin); head.position.y = 2.8; head.castShadow = true; playerMeshGroup.add(head); player.userData.head = head;
+            const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 16), matHat); hatBrim.position.y = 3.2; playerMeshGroup.add(hatBrim);
+            const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 0.6, 16), matHat); hatTop.position.y = 3.5; playerMeshGroup.add(hatTop);
+            const poncho = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 1.0, 1.4, 4), matPoncho); poncho.position.y = 1.8; poncho.rotation.y = Math.PI / 4; poncho.castShadow = true; playerMeshGroup.add(poncho);
+            player.userData.legL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.2, 0.3), matPants); player.userData.legL.position.set(-0.25, 1.2, 0); player.userData.legL.geometry.translate(0, -0.6, 0); player.userData.legL.castShadow = true; playerMeshGroup.add(player.userData.legL);
+            player.userData.legR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.2, 0.3), matPants); player.userData.legR.position.set(0.25, 1.2, 0); player.userData.legR.geometry.translate(0, -0.6, 0); player.userData.legR.castShadow = true; playerMeshGroup.add(player.userData.legR);
+            player.userData.armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), matSkin); player.userData.armR.position.set(0.6, 2.0, 0); player.userData.armR.geometry.translate(0, -0.4, 0); playerMeshGroup.add(player.userData.armR);
+            scene.add(player);
+            player.userData.velocity = new THREE.Vector3(); player.userData.isGrounded = true; player.userData.jumpCount = 0; player.userData.isSliding = false; player.userData.slideTimer = 0;
+        }
+        function createMama() {
+            mama = new THREE.Group(); mamaMeshGroup = new THREE.Group(); mama.add(mamaMeshGroup);
+            const matSkin = new THREE.MeshStandardMaterial({ color: 0xA0522D, roughness: 0.8 });
+            const matDress = new THREE.MeshStandardMaterial({ color: 0x800080, roughness: 1.0 });
+            const matHair = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 1.0 });
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.7), matSkin); head.position.y = 2.7; head.castShadow = true; mamaMeshGroup.add(head);
+            const bun = new THREE.Mesh(new THREE.SphereGeometry(0.4), matHair); bun.position.set(0, 3.1, -0.2); mamaMeshGroup.add(bun);
+            const dress = new THREE.Mesh(new THREE.ConeGeometry(0.8, 2.5, 16), matDress); dress.position.y = 1.25; dress.castShadow = true; mamaMeshGroup.add(dress);
+            scene.add(mama);
+        }
+        function createCoyote() {
+            coyote = new THREE.Group(); coyoteMeshGroup = new THREE.Group(); coyote.add(coyoteMeshGroup);
+            const furColor = 0xC2B280; const furMat = new THREE.MeshStandardMaterial({ color: furColor, roughness: 1.0 }); const noseMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 1.2, 8), furMat); body.rotation.z = Math.PI / 2; body.position.y = 0.8; coyoteMeshGroup.add(body);
+            const head = new THREE.Mesh(new THREE.DodecahedronGeometry(0.35), furMat); head.position.set(0.7, 1.3, 0); coyoteMeshGroup.add(head);
+            const snout = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.4, 8), furMat); snout.rotation.z = -Math.PI / 2; snout.position.set(1.0, 1.3, 0); coyoteMeshGroup.add(snout);
+            const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06), noseMat); nose.position.set(1.2, 1.3, 0); coyoteMeshGroup.add(nose);
+            const earL = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.4, 4), furMat); earL.position.set(0.65, 1.7, 0.15); earL.rotation.x = 0.2; coyoteMeshGroup.add(earL);
+            const earR = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.4, 4), furMat); earR.position.set(0.65, 1.7, -0.15); earR.rotation.x = -0.2; coyoteMeshGroup.add(earR);
+            const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.0, 0.8), furMat); tail.rotation.z = -Math.PI / 4; tail.position.set(-0.8, 0.6, 0); coyoteMeshGroup.add(tail);
+            scene.add(coyote);
+        }
+        function createAlligator() {
+            alligator = new THREE.Group(); alligatorMeshGroup = new THREE.Group(); alligator.add(alligatorMeshGroup);
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0x2E8B57, roughness: 0.6 }); const bellyMat = new THREE.MeshStandardMaterial({ color: 0x90EE90, roughness: 0.8 }); const toothMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF }); const eyeMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF }); const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 0.7), skinMat); body.position.y = 0.5; alligatorMeshGroup.add(body);
+            for(let i=0; i<5; i++) { const ridge = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.2, 4), skinMat); ridge.position.set(-0.5 + (i*0.25), 0.85, 0); alligatorMeshGroup.add(ridge); }
+            const tail1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.5), skinMat); tail1.position.set(-1.3, 0.5, 0); alligatorMeshGroup.add(tail1);
+            const tail2 = new THREE.Mesh(new THREE.ConeGeometry(0.25, 1.0, 4), skinMat); tail2.rotation.z = Math.PI / 2; tail2.position.set(-2.1, 0.5, 0); alligatorMeshGroup.add(tail2);
+            const headGroup = new THREE.Group(); headGroup.position.set(0.9, 0.6, 0); alligatorMeshGroup.add(headGroup);
+            const upperJaw = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.25, 0.5), skinMat); upperJaw.position.set(0.45, 0.15, 0); headGroup.add(upperJaw);
+            const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), skinMat); eyeL.position.set(0.1, 0.35, 0.15); headGroup.add(eyeL); const eyeBallL = new THREE.Mesh(new THREE.SphereGeometry(0.06), eyeMat); eyeBallL.position.set(0.1, 0.35, 0.22); headGroup.add(eyeBallL); const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.02), pupilMat); pupilL.position.set(0.12, 0.35, 0.27); headGroup.add(pupilL);
+            const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), skinMat); eyeR.position.set(0.1, 0.35, -0.15); headGroup.add(eyeR); const eyeBallR = new THREE.Mesh(new THREE.SphereGeometry(0.06), eyeMat); eyeBallR.position.set(0.1, 0.35, -0.22); headGroup.add(eyeBallR); const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.02), pupilMat); pupilR.position.set(0.12, 0.35, -0.27); headGroup.add(pupilR);
+            const jawPivot = new THREE.Group(); jawPivot.position.set(0, 0, 0); headGroup.add(jawPivot); const lowerJaw = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.45), bellyMat); lowerJaw.position.set(0.45, -0.1, 0); jawPivot.add(lowerJaw);
+            const t1 = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1), toothMat); t1.position.set(0.8, 0, 0.2); jawPivot.add(t1); const t2 = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1), toothMat); t2.position.set(0.8, 0, -0.2); jawPivot.add(t2);
+            const legGeo = new THREE.BoxGeometry(0.3, 0.2, 0.6); const legFL = new THREE.Mesh(legGeo, skinMat); legFL.position.set(0.6, 0.3, 0.5); legFL.rotation.x = 0.2; alligatorMeshGroup.add(legFL); const legFR = new THREE.Mesh(legGeo, skinMat); legFR.position.set(0.6, 0.3, -0.5); legFR.rotation.x = -0.2; alligatorMeshGroup.add(legFR); const legBL = new THREE.Mesh(legGeo, skinMat); legBL.position.set(-0.6, 0.3, 0.5); legBL.rotation.x = 0.2; alligatorMeshGroup.add(legBL); const legBR = new THREE.Mesh(legGeo, skinMat); legBR.position.set(-0.6, 0.3, -0.5); legBR.rotation.x = -0.2; alligatorMeshGroup.add(legBR);
+            alligator.userData.jaw = jawPivot; scene.add(alligator);
+        }
+
+        function createAgent() {
+            agent = new THREE.Group(); agentMeshGroup = new THREE.Group(); agent.add(agentMeshGroup);
+            const uniformMat = new THREE.MeshStandardMaterial({ color: 0x1a1a40, roughness: 0.7 }); const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 }); const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 }); const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 });
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.5), uniformMat); torso.position.y = 1.8; agentMeshGroup.add(torso);
+            const badge = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.25, 0.05), goldMat); badge.position.set(0.2, 2.0, 0.26); agentMeshGroup.add(badge);
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.6), skinMat); head.position.y = 2.75; agentMeshGroup.add(head);
+            const hatDome = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 16, 0, Math.PI*2, 0, Math.PI/2), uniformMat); hatDome.position.y = 3.05; agentMeshGroup.add(hatDome); const hatBrim = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.4), uniformMat); hatBrim.position.set(0, 3.05, 0.35); hatBrim.rotation.x = 0.1; agentMeshGroup.add(hatBrim);
+            const glassL = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.05, 8), blackMat); glassL.rotation.x = Math.PI/2; glassL.position.set(0.15, 2.8, 0.3); agentMeshGroup.add(glassL); const glassR = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.05, 8), blackMat); glassR.rotation.x = Math.PI/2; glassR.position.set(-0.15, 2.8, 0.3); agentMeshGroup.add(glassR); const glassBridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.02), blackMat); glassBridge.position.set(0, 2.85, 0.3); agentMeshGroup.add(glassBridge);
+            const armLGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.9); const armL = new THREE.Mesh(armLGeo, uniformMat); armL.position.set(0.6, 2.1, 0); agentMeshGroup.add(armL); agent.userData.armL = armL; 
+            const armRGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.9); const armR = new THREE.Mesh(armRGeo, uniformMat); armR.position.set(-0.6, 2.1, 0); agentMeshGroup.add(armR); agent.userData.armR = armR; 
+            const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.3), uniformMat); legL.position.set(0.25, 0.65, 0); agentMeshGroup.add(legL); const legR = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.3), uniformMat); legR.position.set(-0.25, 0.65, 0); agentMeshGroup.add(legR);
+            const droneGroup = new THREE.Group(); droneGroup.visible = false; droneGroup.position.set(0, 2.5, 0); agent.add(droneGroup); agent.userData.drone = droneGroup;
+            const droneBody = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.4), new THREE.MeshStandardMaterial({color:0x333})); droneGroup.add(droneBody); const r1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.02, 0.05), new THREE.MeshStandardMaterial({color:0x888})); r1.position.y = 0.05; droneGroup.add(r1); const r2 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.02, 0.05), new THREE.MeshStandardMaterial({color:0x888})); r2.rotation.y = Math.PI/2; r2.position.y = 0.05; droneGroup.add(r2); agent.userData.droneRotors = [r1, r2];
+            scene.add(agent);
+        }
+
+        function createCashier() {
+            cashier = new THREE.Group(); cashierMeshGroup = new THREE.Group(); cashier.add(cashierMeshGroup);
+            const vestMat = new THREE.MeshStandardMaterial({color: 0xff0000}); const skinMat = new THREE.MeshStandardMaterial({color: 0xffccaa}); const hatMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.5), vestMat); body.position.y = 1.7; cashierMeshGroup.add(body);
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.6), skinMat); head.position.y = 2.6; cashierMeshGroup.add(head);
+            const hat = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.7), hatMat); hat.position.y = 3.0; cashierMeshGroup.add(hat);
+            scene.add(cashier);
+        }
+        
+        function createSecurity() {
+            function createGuardMesh() {
+                const g = new THREE.Group(); const matShirt = new THREE.MeshStandardMaterial({color: 0xFFFFFF}); const matPants = new THREE.MeshStandardMaterial({color: 0x111111}); const matSkin = new THREE.MeshStandardMaterial({color: 0xE0AC69});
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.6), matShirt); body.position.y = 1.8; g.add(body);
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.7), matSkin); head.position.y = 2.8; g.add(head);
+                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.2, 0.35), matPants); legL.position.set(-0.25, 0.6, 0); g.add(legL);
+                const legR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.2, 0.35), matPants); legR.position.set(0.25, 0.6, 0); g.add(legR);
+                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.0, 0.35), matShirt); armL.position.set(0.7, 1.8, 0); g.add(armL);
+                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.0, 0.35), matShirt); armR.position.set(-0.7, 1.8, 0); g.add(armR);
+                const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 0.1), new THREE.MeshStandardMaterial({color:0x000000})); glasses.position.set(0, 2.9, 0.35); g.add(glasses);
+                return g;
+            }
+            securityL = createGuardMesh(); securityR = createGuardMesh();
+            scene.add(securityL); scene.add(securityR); securityL.visible = false; securityR.visible = false;
+        }
+
+        // --- Environment ---
+        function createGround() { for(let i=0; i<15; i++) spawnGroundChunk(-i * 20); }
+
+        function spawnGroundChunk(zPosition) {
+            const geometry = new THREE.PlaneGeometry(40, 20);
+            const lvl = LEVELS[currentLevelIdx];
+            const material = new THREE.MeshStandardMaterial({ color: lvl.groundColor, roughness: 1 });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.rotation.x = -Math.PI / 2; mesh.position.z = zPosition; mesh.receiveShadow = true;
+            scene.add(mesh); groundChunks.push(mesh);
+            
+            if (currentLevelIdx === 4) { // STREET MARKINGS
+                const lineGeo = new THREE.PlaneGeometry(0.2, 20);
+                const line1 = new THREE.Mesh(lineGeo, MAT_ROAD_YELLOW); line1.position.set(-0.2, 0, 0.05); mesh.add(line1);
+                const line2 = new THREE.Mesh(lineGeo, MAT_ROAD_YELLOW); line2.position.set(0.2, 0, 0.05); mesh.add(line2);
+                const sidewalkGeo = new THREE.PlaneGeometry(10, 20);
+                const sidewalkL = new THREE.Mesh(sidewalkGeo, MAT_ROAD_SIDEWALK); sidewalkL.position.set(-15, 0, 0.05); mesh.add(sidewalkL);
+                const sidewalkR = new THREE.Mesh(sidewalkGeo, MAT_ROAD_SIDEWALK); sidewalkR.position.set(15, 0, 0.05); mesh.add(sidewalkR);
+            }
+            if(Math.random() > 0.3) spawnDecor(zPosition, currentLevelIdx);
+        }
+
+        function spawnDecor(zPos, levelIdx) {
+            if (levelIdx < 2) {
+                const h = Math.random() * 2 + 1; const cactusGeo = new THREE.BoxGeometry(0.5, h, 0.5); const cactusMat = new THREE.MeshStandardMaterial({color: 0x2E8B57});
+                const cactus = new THREE.Mesh(cactusGeo, cactusMat); const arm = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.4, 0.4), cactusMat); arm.position.y = h * 0.3; cactus.add(arm);
+                cactus.position.set((Math.random() > 0.5 ? 1 : -1) * (8 + Math.random()*8), h/2, zPos + Math.random()*10 - 5); cactus.castShadow = true; scene.add(cactus); decorations.push(cactus);
+            } else if (levelIdx === 3) { // Breach
+                if (Math.random() > 0.5) {
+                    const poleGroup = new THREE.Group(); const woodMat = new THREE.MeshStandardMaterial({color: 0x3e2723});
+                    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 8), woodMat); pole.position.y = 4; poleGroup.add(pole);
+                    const bar = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 0.2), woodMat); bar.position.y = 7; poleGroup.add(bar);
+                    poleGroup.position.set((Math.random() > 0.5 ? 1 : -1) * (8 + Math.random()*4), 0, zPos + Math.random()*10 - 5); scene.add(poleGroup); decorations.push(poleGroup);
+                } else {
+                     const rockGeo = new THREE.DodecahedronGeometry(Math.random() * 1 + 0.5); const rockMat = new THREE.MeshStandardMaterial({color: 0x222222});
+                    const rock = new THREE.Mesh(rockGeo, rockMat); rock.position.set((Math.random() > 0.5 ? 1 : -1) * (8 + Math.random()*4), 0.5, zPos + Math.random()*10 - 5); scene.add(rock); decorations.push(rock);
+                }
+            } else if (levelIdx === 4) { // Suburbia
+                const houseGroup = new THREE.Group();
+                const walls = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 6), Math.random() > 0.5 ? MAT_HOUSE_WALL_1 : MAT_HOUSE_WALL_2); walls.position.y = 2.1; houseGroup.add(walls);
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(5, 2, 4), MAT_HOUSE_ROOF); roof.position.y = 5; roof.rotation.y = Math.PI/4; houseGroup.add(roof);
+                const door = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.2), MAT_HOUSE_DOOR); door.position.set(0, 1, 3); houseGroup.add(door);
+                const winGeo = new THREE.PlaneGeometry(1, 1); const winMat = new THREE.MeshBasicMaterial({color: 0x87CEEB});
+                const w1 = new THREE.Mesh(winGeo, winMat); w1.position.set(-1.5, 2.5, 3.1); houseGroup.add(w1); const w2 = new THREE.Mesh(winGeo, winMat); w2.position.set(1.5, 2.5, 3.1); houseGroup.add(w2);
+                const garage = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 4), new THREE.MeshStandardMaterial({color:0xaaaaaa})); garage.position.set(4, 1.5, 0); houseGroup.add(garage);
+                const side = Math.random() > 0.5 ? 1 : -1; houseGroup.position.set(side * (18 + Math.random()*2), 0, zPos); houseGroup.rotation.y = side === 1 ? -Math.PI/2 : Math.PI/2;
+                scene.add(houseGroup); decorations.push(houseGroup);
+                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 1.5); const tree = new THREE.Mesh(trunkGeo, MAT_TREE_TRUNK);
+                const leavesGeo = new THREE.DodecahedronGeometry(1.5); const leaves = new THREE.Mesh(leavesGeo, MAT_TREE_LEAVES); leaves.position.y = 1.5; tree.add(leaves);
+                tree.position.set(side * 12, 0.75, zPos + 5); scene.add(tree); decorations.push(tree);
+            }
+        }
+
+        function createWall(zPos, lane) {
+            const wallGroup = new THREE.Group();
+            let matColor = 0x8B4513; if (currentLevelIdx === 3) matColor = 0x222222; if (currentLevelIdx === 4) matColor = 0xFFFFFF;
+            const metalMat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.7 }); 
+            const xPos = lane * LANE_WIDTH;
+            const type = Math.random();
+
+            if (currentLevelIdx === 3) { // The Breach
+                if (type > 0.66) {
+                    const poleMat = new THREE.MeshStandardMaterial({color: 0x333333}); const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), poleMat); pole.position.y = 2; wallGroup.add(pole);
+                    const lightGeo = new THREE.SphereGeometry(0.3); const lightMat = new THREE.MeshBasicMaterial({color: 0xff0000}); const light = new THREE.Mesh(lightGeo, lightMat); light.position.y = 4; wallGroup.add(light);
+                    const base = new THREE.Mesh(new THREE.BoxGeometry(1, 0.5, 1), poleMat); base.position.y = 0.25; wallGroup.add(base);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 2, zPos), new THREE.Vector3(0.5, 4, 0.5));
+                } else if (type > 0.33) {
+                    const concrete = new THREE.MeshStandardMaterial({color: 0x555555, roughness: 0.9}); const block = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.5, 2.5), concrete); block.position.y = 1.25; block.rotation.y = Math.random(); block.rotation.x = Math.random() * 0.2; wallGroup.add(block);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 1.25, zPos), new THREE.Vector3(2.0, 2.5, 2.0));
+                } else {
+                    const wireMat = new THREE.MeshStandardMaterial({color: 0x444444, wireframe: true});
+                    const coil1 = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.05, 8, 16), wireMat); coil1.position.set(-1, 0.4, 0); coil1.rotation.y = Math.PI/2; wallGroup.add(coil1);
+                    const coil2 = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.05, 8, 16), wireMat); coil2.position.set(0, 0.4, 0); coil2.rotation.y = Math.PI/2; wallGroup.add(coil2);
+                    const coil3 = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.05, 8, 16), wireMat); coil3.position.set(1, 0.4, 0); coil3.rotation.y = Math.PI/2; wallGroup.add(coil3);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 0.4, zPos), new THREE.Vector3(3.0, 0.8, 0.5));
+                }
+            } else if (currentLevelIdx === 4) { // Suburbia
+                if (type > 0.66) {
+                    const grillMat = new THREE.MeshStandardMaterial({color: 0x111111}); const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1, 16), grillMat); tank.rotation.x = Math.PI/2; tank.rotation.z = Math.PI/2; tank.position.y = 1.5; wallGroup.add(tank);
+                    const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), new THREE.MeshStandardMaterial({color:0x888})); leg1.position.set(0.4, 0.75, 0.4); wallGroup.add(leg1);
+                    const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), new THREE.MeshStandardMaterial({color:0x888})); leg2.position.set(-0.4, 0.75, 0.4); wallGroup.add(leg2);
+                    const smoke = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4), new THREE.MeshBasicMaterial({color: 0xaaaaaa, transparent: true, opacity: 0.6})); smoke.position.y = 2.2; wallGroup.add(smoke);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 1.5, zPos), new THREE.Vector3(1.5, 3, 1.5));
+                } else if (type > 0.33) {
+                    const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.2), new THREE.MeshStandardMaterial({color: 0x552200})); post.position.y = 0.75; wallGroup.add(post);
+                    const box = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 1.0), new THREE.MeshStandardMaterial({color: 0x000088})); box.position.y = 1.8;
+                    const top = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.0, 16, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({color: 0x000088})); top.rotation.z = Math.PI/2; top.rotation.y = Math.PI/2; top.position.y = 2.2; wallGroup.add(box); wallGroup.add(top);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 1.5, zPos), new THREE.Vector3(0.8, 3, 1.0));
+                } else {
+                    const woodMat = new THREE.MeshStandardMaterial({color: 0xffffff}); const bar1 = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.1, 0.05), woodMat); bar1.position.y = 0.3; wallGroup.add(bar1); const bar2 = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.1, 0.05), woodMat); bar2.position.y = 0.7; wallGroup.add(bar2);
+                    for(let i=0; i<6; i++) { const slat = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.0, 0.05), woodMat); slat.position.set(-1.25 + (i*0.5), 0.5, 0.05); const point = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.2, 4), woodMat); point.rotation.y = Math.PI/4; point.position.set(-1.25 + (i*0.5), 1.1, 0.05); wallGroup.add(slat); wallGroup.add(point); }
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 0.5, zPos), new THREE.Vector3(3.2, 1.0, 0.2));
+                }
+            } else { // Standard
+                if (type > 0.66) {
+                    const h = 5; const w = 2.5; const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.3), metalMat); wall.position.y = 2.5; wallGroup.add(wall);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 2.5, zPos), new THREE.Vector3(w, h, 0.5));
+                } else if (type > 0.33) {
+                    const postH = 3; const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.2, postH, 0.2), metalMat); post1.position.set(-1.4, 1.5, 0); const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, postH, 0.2), metalMat); post2.position.set(1.4, 1.5, 0); const sign = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.0, 0.2), new THREE.MeshStandardMaterial({color: 0xEEEEEE})); sign.position.set(0, 2.2, 0); wallGroup.add(post1, post2, sign);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 2.4, zPos), new THREE.Vector3(2.0, 1.0, 0.2));
+                } else {
+                    const barrier = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 0.8), metalMat); barrier.position.y = 0.4; wallGroup.add(barrier);
+                    wallGroup.userData.colliderBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(xPos, 0.25, zPos), new THREE.Vector3(2.0, 0.5, 0.2));
+                }
+            }
+            wallGroup.position.set(xPos, 0, zPos); wallGroup.traverse(c => { if(c.isMesh) c.castShadow = true; });
+            scene.add(wallGroup); obstacles.push(wallGroup);
+        }
+
+        function createCollectible(type, zPos, lane) {
+            const xPos = lane * LANE_WIDTH; const group = new THREE.Group();
+            if (type === 'water') {
+                const jugMat = new THREE.MeshStandardMaterial({color: 0x00BFFF, transparent: true, opacity: 0.8, roughness: 0.1}); const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.5), jugMat); body.position.y = 1.0; group.add(body);
+                group.userData.type = 'water';
+            } else if (type === 'chili') {
+                const chiliMat = new THREE.MeshStandardMaterial({color: 0xFF0000, emissive: 0x550000}); const body = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.8, 8), chiliMat); body.rotation.x = Math.PI; body.rotation.z = -0.5; body.position.y = 1.0; const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.3), new THREE.MeshBasicMaterial({color: 0x00aa00})); stem.position.set(0.1, 1.4, 0); stem.rotation.z = -0.5; group.add(body, stem);
+                group.userData.type = 'chili';
+            }
+            group.position.set(xPos, 0, zPos); group.userData.bobOffset = Math.random() * Math.PI; scene.add(group); collectibles.push(group);
+        }
+
+        function spawnDust(x, y, z) {
+            for(let i=0; i<5; i++) {
+                const geo = new THREE.BoxGeometry(0.2, 0.2, 0.2); const mat = new THREE.MeshBasicMaterial({color: 0xDEB887, transparent: true, opacity: 0.6}); const p = new THREE.Mesh(geo, mat);
+                p.position.set(x + (Math.random()-0.5), y, z + (Math.random()-0.5)); scene.add(p); particles.push({ mesh: p, vy: Math.random()*0.1, vx: (Math.random()-0.5)*0.1, vz: (Math.random()-0.5)*0.1, life: 1.0 });
+            }
+        }
+
+        function spawnSmashEffect(x, y, z) {
+             for(let i=0; i<10; i++) {
+                const geo = new THREE.BoxGeometry(0.4, 0.1, 0.4); const mat = new THREE.MeshBasicMaterial({color: 0x8B4513}); const p = new THREE.Mesh(geo, mat);
+                p.position.set(x + (Math.random()-0.5), y + Math.random(), z); scene.add(p); particles.push({ mesh: p, vy: Math.random()*0.2 + 0.1, vx: (Math.random()-0.5)*0.3, vz: 0.5 + Math.random(), life: 1.0 });
+            }
+        }
+
+        function showPopup(text, color) {
+            const div = document.createElement('div'); div.innerText = text; div.className = 'popup-text'; div.style.color = color;
+            div.style.left = '50%'; div.style.top = '40%'; div.style.transform = 'translateX(-50%)';
+            document.body.appendChild(div); setTimeout(() => div.remove(), 1000);
+        }
+
+        // --- 3D Cutscene Logic ---
+
+        var costcoExteriorGroup = null;
+        var costcoInteriorGroup = null;
+
+        // --- Helper to Clear Everything ---
+        function clearScene() {
+            // 1. Clear dynamic game arrays
+            obstacles.forEach(o => scene.remove(o)); obstacles = [];
+            decorations.forEach(d => scene.remove(d)); decorations = [];
+            collectibles.forEach(c => scene.remove(c)); collectibles = [];
+            particles.forEach(p => scene.remove(p.mesh)); particles = [];
+            groundChunks.forEach(g => scene.remove(g)); groundChunks = [];
+            interiorLights.forEach(l => scene.remove(l)); interiorLights = [];
+            
+            // 2. Remove special groups if they exist
+            if (costcoExteriorGroup) { scene.remove(costcoExteriorGroup); costcoExteriorGroup = null; }
+            if (costcoInteriorGroup) { scene.remove(costcoInteriorGroup); costcoInteriorGroup = null; }
+            
+            // 3. Reset state
+            targetLane = 0; 
+        }
+
+        // --- Phase 1: Costco Approach ---
+        function startCostcoApproach() {
+             isCostcoEnding = true; isCostcoApproach = true; // Set flag
+             clearScene(); // Use new clean function
+
+             // Setup Exterior Scene
+             scene.background = new THREE.Color(0x87CEEB); // Day sky
+             scene.fog = new THREE.Fog(0x87CEEB, 20, 200); // FOG FIX: Extended to 200
+             
+             // Ground (Parking Lot)
+             const lotGeo = new THREE.PlaneGeometry(40, 100);
+             const lotMat = new THREE.MeshStandardMaterial({color: 0x333333});
+             const lot = new THREE.Mesh(lotGeo, lotMat);
+             lot.rotation.x = -Math.PI/2; lot.position.z = -40;
+             
+             // The Building Group
+             costcoExteriorGroup = new THREE.Group();
+             costcoExteriorGroup.add(lot);
+
+             const wall = new THREE.Mesh(new THREE.BoxGeometry(30, 15, 5), new THREE.MeshStandardMaterial({color: 0xEEEEEE}));
+             wall.position.set(0, 7.5, -60);
+             costcoExteriorGroup.add(wall);
+             
+             const stripe = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 5.1), new THREE.MeshBasicMaterial({color: 0xff0000}));
+             stripe.position.set(0, 12, -60);
+             costcoExteriorGroup.add(stripe);
+             
+             // Add "COSTCO" Sign (REMOVED WHOLESALE)
+             const signTexture = createTextTexture("COSTCO", "#FF0000", "#EEEEEE", "bold 70px Arial");
+             const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(15, 4), new THREE.MeshBasicMaterial({map: signTexture, transparent:true}));
+             signMesh.position.set(0, 12.5, -57.3); // Slightly in front
+             costcoExteriorGroup.add(signMesh);
+             
+             const door = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 0.1), new THREE.MeshBasicMaterial({color: 0x111111}));
+             door.position.set(0, 3, -57.4);
+             costcoExteriorGroup.add(door);
+             
+             scene.add(costcoExteriorGroup);
+             
+             // Reset Player
+             player.position.set(0, 0, 10);
+             player.rotation.y = Math.PI; // Face building (towards -z)
+             
+             // Camera
+             camera.position.set(0, 5, 20);
+             camera.lookAt(0, 5, -60);
+
+             if (!animationId) animate();
+        }
+
+        function startCutscene(dialogueQueue) {
+            isCutscene = true; isPlaying = true; isExitingCutscene = false; currentDialogueQueue = dialogueQueue; currentDialogueIndex = 0;
+            
+            // Standard Level Setup
+            clearScene(); 
+            uiLayer.classList.add('hidden'); cutsceneUI.classList.remove('hidden');
+            
+            // Re-init standard ground for cutscene
+            const lvl = LEVELS[currentLevelIdx];
+            currentSpeed = lvl.speed; 
+            scene.background.setHex(lvl.color); 
+            scene.fog.color.setHex(lvl.fog); 
+            if (currentLevelIdx === 3 || currentLevelIdx === 4) { cityLights.visible = true; } else { cityLights.visible = false; } 
+            for(let i=0; i<15; i++) spawnGroundChunk(-i*20); 
+
+            mama.visible = false; coyote.visible = false; alligator.visible = false; agent.visible = false;
+            const npcType = LEVELS[currentLevelIdx].npc; let targetNPC;
+            if (npcType === 'mom') targetNPC = mama; else if (npcType === 'coyote') targetNPC = coyote; else if (npcType === 'alligator') targetNPC = alligator; else if (npcType === 'agent') targetNPC = agent;
+            player.position.set(-1.5, 0, 5); player.rotation.y = Math.PI / 2; player.userData.armR.rotation.z = 0; chandlerPhone.visible = false; mamaThoughtBubble.visible = false;
+            if (targetNPC) {
+                if (currentLevelIdx === 4 && npcType === 'mom') { targetNPC = null; } else {
+                    targetNPC.position.set(2, 0, 4);
+                    if (npcType === 'alligator') { targetNPC.rotation.y = -Math.PI / 1.2; targetNPC.position.y = 0; } else if (npcType === 'coyote') { targetNPC.rotation.y = -Math.PI / 1.5; targetNPC.position.y = 0; } else if (npcType === 'agent') { targetNPC.rotation.y = -Math.PI / 2; targetNPC.userData.drone.visible = false; } else { targetNPC.rotation.y = -Math.PI / 3; }
+                    targetNPC.visible = true;
+                }
+            }
+            const aspect = window.innerWidth / window.innerHeight; const dist = aspect < 1 ? 16 : 11; const height = aspect < 1 ? 4 : 3; camera.position.set(0, height, dist); camera.lookAt(0, 1.5, 4);
+            lastTime = performance.now(); showNextDialogueLine(); animate();
+        }
+
+        function showNextDialogueLine() {
+            bubbleContainer.innerHTML = '';
+            if (currentDialogueIndex >= currentDialogueQueue.length) { startExitRun(); return; }
+            const line = currentDialogueQueue[currentDialogueIndex]; autoAdvanceTimer = line.delay;
+            const bubble = document.createElement('div'); bubble.className = 'speech-bubble'; bubble.innerText = line.text; bubbleContainer.appendChild(bubble); activeBubble = { element: bubble, speaker: line.speaker, action: line.action }; bubble.style.display = 'block';
+            chandlerPhone.visible = false; player.userData.armR.rotation.z = 0; mamaThoughtBubble.visible = false;
+            if (line.action === "phone_call") { chandlerPhone.visible = true; player.userData.armR.rotation.z = 2.5; }
+            if (line.speaker === "Mama" && currentLevelIdx === 4) { mamaThoughtBubble.visible = true; mamaThoughtBubble.position.set(0.8, 4.0, 0); }
+        }
+
+        function advanceDialogue() { currentDialogueIndex++; showNextDialogueLine(); }
+        function startExitRun() { isExitingCutscene = true; cutsceneUI.classList.add('hidden'); chandlerPhone.visible = false; mamaThoughtBubble.visible = false; player.userData.armR.rotation.z = 0; player.rotation.y = Math.PI; }
+
+        function updateCutscene(dt) {
+            if (isExitingCutscene) {
+                player.position.z -= 10 * dt; const time = Date.now() * 0.02; player.userData.legL.rotation.x = Math.sin(time) * 1.2; player.userData.legR.rotation.x = Math.sin(time + Math.PI) * 1.2;
+                if (player.position.z < -10) { endCutscene(); } return;
+            }
+            if (autoAdvanceTimer > 0) { autoAdvanceTimer -= dt * 1000; if (autoAdvanceTimer <= 0) advanceDialogue(); }
+            if (activeBubble) {
+                let targetObj;
+                if (activeBubble.speaker === "Chandler") targetObj = player; else if (activeBubble.speaker === "Mama") { if (currentLevelIdx === 4) targetObj = player; else targetObj = mama; } else if (activeBubble.speaker === "Coyote") targetObj = coyote; else if (activeBubble.speaker === "Alligator") targetObj = alligator; else if (activeBubble.speaker === "Agent") targetObj = agent; else if (activeBubble.speaker === "Cashier") targetObj = cashier;
+                if (targetObj) {
+                    const headPos = targetObj.position.clone(); headPos.y = 4.2;
+                    if (activeBubble.speaker === "Mama" && currentLevelIdx === 4) { headPos.y = 5.5; headPos.x += 1.0; }
+                    headPos.project(camera); const x = (headPos.x * .5 + .5) * window.innerWidth; const y = (-(headPos.y * .5) + .5) * window.innerHeight; activeBubble.element.style.left = `${x}px`; activeBubble.element.style.top = `${y}px`;
+                }
+                if (activeBubble.action === 'gator_snap') { const time = Date.now() * 0.02; if (alligator.visible && alligator.userData.jaw) { alligator.userData.jaw.rotation.z = Math.abs(Math.sin(time)) * 0.5; alligatorMeshGroup.position.x = Math.sin(time * 0.5) * 0.5; } player.position.y = Math.abs(Math.sin(time * 2)) * 0.5; }
+                if (activeBubble.action === 'deploy_drones') { const time = Date.now() * 0.01; if (agent.visible && agent.userData.drone) { agent.userData.armL.rotation.z = Math.PI / 4; agent.userData.armR.rotation.z = -Math.PI / 4; const drone = agent.userData.drone; drone.visible = true; drone.position.y = 3.5 + Math.sin(time * 5) * 0.5; if (drone.position.x > -1.0) { drone.position.x -= 0.02; } agent.userData.droneRotors.forEach(r => r.rotation.y += 0.5); } player.rotation.z = Math.sin(time * 20) * 0.1; }
+                if (activeBubble.action === 'agent_scan') { if (agent.visible) { agentMeshGroup.rotation.y = Math.sin(Date.now() * 0.005) * 0.5; } }
+                if (activeBubble.action === "shock") { player.rotation.z = Math.sin(Date.now() * 0.1) * 0.2; player.scale.y = 0.9 + Math.sin(Date.now() * 0.05) * 0.1; }
+                if (activeBubble.action === "check_pockets") { player.userData.armR.rotation.x = Math.sin(Date.now() * 0.02) * 0.5; }
+                if (activeBubble.action === "call_security") { 
+                    activeBubble = null; // Clear bubble action so it doesn't loop
+                    isDraggingOut = true;
+                    guardsGrabbed = false;
+                    // Spawn guards relative to player
+                    securityL.position.set(player.position.x - 5, 0, player.position.z + 2);
+                    securityR.position.set(player.position.x + 5, 0, player.position.z + 2);
+                    securityL.visible = true;
+                    securityR.visible = true;
+                    // Guards face player
+                    securityL.lookAt(player.position);
+                    securityR.lookAt(player.position);
+                }
+            }
+            const time = Date.now() * 0.005;
+            if (!activeBubble || !activeBubble.action) { playerMeshGroup.position.y = Math.sin(time) * 0.1; player.rotation.z = 0; }
+            if (mama.visible) mamaMeshGroup.position.y = Math.sin(time+1) * 0.1;
+            if (agent.visible) agentMeshGroup.position.y = Math.sin(time+2) * 0.1;
+            if (mamaThoughtBubble.visible) { mamaThoughtBubble.position.y = 4.0 + Math.sin(time * 2) * 0.2; mamaThoughtBubble.rotation.y += 0.01; }
+        }
+
+        function endCutscene() {
+            isCutscene = false; isExitingCutscene = false; cutsceneUI.classList.add('hidden'); bubbleContainer.innerHTML = '';
+            camera.position.set(0, 6, 12); camera.lookAt(0, 2, 0); player.position.set(0,0,0); player.rotation.set(0,0,0);
+            mama.visible = false; coyote.visible = false; alligator.visible = false; agent.visible = false; mamaThoughtBubble.visible = false; chandlerPhone.visible = false; player.userData.armR.rotation.z = 0;
+            uiLayer.classList.remove('hidden'); isPlaying = true; isPaused = false;
+        }
+
+        // --- Costco Ending Logic (Interior) ---
+        function startCostcoEnding() {
+            isCostcoEnding = true; isCostcoApproach = false; // Ensure approach flag is off
+            clearScene(); // Clean up exterior
+
+            costcoInteriorGroup = new THREE.Group();
+            
+            // Warehouse Interior - Better Lighting & Atmosphere
+            scene.background = new THREE.Color(0xEEEEEE); 
+            scene.fog = new THREE.FogExp2(0xEEEEEE, 0.02); // Softer fog
+
+            // Add interior lights
+            const lightColor = 0xFFFCE0; // Warm fluorescent
+            const intensity = 0.8;
+            const distance = 30;
+            const decay = 2;
+            
+            const light1 = new THREE.PointLight(lightColor, intensity, distance, decay);
+            light1.position.set(0, 10, -5);
+            light1.castShadow = true;
+            scene.add(light1); interiorLights.push(light1);
+
+            const light2 = new THREE.PointLight(lightColor, intensity, distance, decay);
+            light2.position.set(-10, 10, -15);
+            scene.add(light2); interiorLights.push(light2);
+
+            const light3 = new THREE.PointLight(lightColor, intensity, distance, decay);
+            light3.position.set(10, 10, -15);
+            scene.add(light3); interiorLights.push(light3);
+
+            // Polished Concrete Floor
+            const floorGeo = new THREE.PlaneGeometry(60, 60);
+            const floorMat = new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                roughness: 0.4,
+                metalness: 0.1
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI/2; 
+            floor.receiveShadow = true;
+            costcoInteriorGroup.add(floor);
+            
+            // Detailed Counter Area
+            const counterGroup = new THREE.Group();
+            counterGroup.position.set(0, 0, -10);
+            costcoInteriorGroup.add(counterGroup);
+
+            // Main Counter
+            const counter = new THREE.Mesh(new THREE.BoxGeometry(14, 1.2, 2), new THREE.MeshStandardMaterial({color: 0xD32F2F})); // Costco Red
+            counter.position.y = 0.6;
+            counter.castShadow = true; counter.receiveShadow = true;
+            counterGroup.add(counter);
+
+            // Registers
+            const regMat = new THREE.MeshStandardMaterial({color: 0x333333});
+            const screenMat = new THREE.MeshBasicMaterial({color: 0x00FF00});
+            for(let i=-1; i<=1; i+=2) {
+                const reg = new THREE.Group();
+                reg.position.set(i * 4, 1.2, 0.5);
+                const base = new THREE.Mesh(new THREE.BoxGeometry(1, 0.8, 1), regMat);
+                base.position.y = 0.4;
+                const screen = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 0.1), regMat);
+                screen.position.set(0, 1.0, -0.4); screen.rotation.x = -0.3;
+                const display = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.5), screenMat);
+                display.position.set(0, 1.0, -0.34); display.rotation.x = -0.3;
+                reg.add(base, screen, display);
+                counterGroup.add(reg);
+            }
+
+            // Soda Fountains
+            const sodaMachine = new THREE.Group();
+            sodaMachine.position.set(9, 0, -9);
+            const smBody = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 1.5), new THREE.MeshStandardMaterial({color: 0xCCCCCC}));
+            smBody.position.y = 2;
+            sodaMachine.add(smBody);
+            for(let i=0; i<4; i++) {
+                const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.3), new THREE.MeshStandardMaterial({color: 0x333333}));
+                nozzle.rotation.x = Math.PI/2;
+                nozzle.position.set(-1 + i*0.66, 2.5, 0.8);
+                sodaMachine.add(nozzle);
+            }
+            costcoInteriorGroup.add(sodaMachine);
+
+            // Improved Menu Board with Emissive Material
+            const menuTexture = createFoodCourtSignTexture();
+            const menuMat = new THREE.MeshStandardMaterial({
+                map: menuTexture,
+                emissive: 0xFFFFFF,
+                emissiveMap: menuTexture,
+                emissiveIntensity: 0.5
+            });
+            const menuBoard = new THREE.Mesh(new THREE.BoxGeometry(12, 3, 0.2), menuMat);
+            menuBoard.position.set(0, 5, -12);
+            costcoInteriorGroup.add(menuBoard);
+
+            // Improved Picnic Tables
+            function createPicnicTable(x, z) {
+                const tGroup = new THREE.Group();
+                const woodMat = new THREE.MeshStandardMaterial({color: 0xD32F2F, roughness: 0.6}); // Costco Red Wood
+                const metalMat = new THREE.MeshStandardMaterial({color: 0xAAAAAA});
+
+                // Table Top
+                const top = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 1.5), woodMat);
+                top.position.y = 1.2;
+                top.castShadow = true;
+
+                // Benches
+                const benchL = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 0.8), woodMat);
+                benchL.position.set(0, 0.6, 1.2);
+                benchL.castShadow = true;
+                const benchR = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 0.8), woodMat);
+                benchR.position.set(0, 0.6, -1.2);
+                benchR.castShadow = true;
+
+                // Frame (Simplified)
+                const legGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2);
+                const leg1 = new THREE.Mesh(legGeo, metalMat); leg1.position.set(-1, 0.6, 0);
+                const leg2 = new THREE.Mesh(legGeo, metalMat); leg2.position.set(1, 0.6, 0);
+
+                tGroup.add(top, benchL, benchR, leg1, leg2);
+
+                // Add an Eater
+                const eaterGroup = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 0.8, 8), new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff}));
+                body.position.y = 0.4;
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), new THREE.MeshStandardMaterial({color: 0xffccaa}));
+                head.position.y = 0.95;
+                eaterGroup.add(body, head);
+                eaterGroup.position.set(0, 0.7, 1.2); 
+                tGroup.add(eaterGroup);
+                
+                tGroup.position.set(x, 0, z);
+                return tGroup;
+            }
+
+            costcoInteriorGroup.add(createPicnicTable(-5, -3));
+            costcoInteriorGroup.add(createPicnicTable(5, -3));
+            costcoInteriorGroup.add(createPicnicTable(-5, 3));
+            costcoInteriorGroup.add(createPicnicTable(5, 3));
+            
+            // Fuller Pallet Racks
+            function createPalletRack(x, z) {
+                const rackGroup = new THREE.Group();
+                const orangeMat = new THREE.MeshStandardMaterial({color: 0xFF6F00});
+                const boxMat = new THREE.MeshStandardMaterial({color: 0xC19A6B}); // Cardboard
+
+                // Uprights
+                for(let i=-1; i<=1; i+=2) {
+                    const post = new THREE.Mesh(new THREE.BoxGeometry(0.3, 8, 0.3), orangeMat);
+                    post.position.set(i*2, 4, 0);
+                    rackGroup.add(post);
+                    const postBack = new THREE.Mesh(new THREE.BoxGeometry(0.3, 8, 0.3), orangeMat);
+                    postBack.position.set(i*2, 4, -2);
+                    rackGroup.add(postBack);
+                }
+                // Beams & Shelves
+                for(let y=2; y<=6; y+=2) {
+                    const beamFront = new THREE.Mesh(new THREE.BoxGeometry(4.3, 0.2, 0.1), orangeMat);
+                    beamFront.position.set(0, y, 0.15); rackGroup.add(beamFront);
+                    const beamBack = new THREE.Mesh(new THREE.BoxGeometry(4.3, 0.2, 0.1), orangeMat);
+                    beamBack.position.set(0, y, -2.15); rackGroup.add(beamBack);
+                    
+                    // Add Pallets of boxes
+                    const pallet = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.5, 1.8), boxMat);
+                    pallet.position.set(0, y + 0.85, -1);
+                    pallet.castShadow = true;
+                    rackGroup.add(pallet);
+                }
+                rackGroup.position.set(x, 0, z);
+                return rackGroup;
+            }
+
+            costcoInteriorGroup.add(createPalletRack(-10, -18));
+            costcoInteriorGroup.add(createPalletRack(10, -18));
+            costcoInteriorGroup.add(createPalletRack(-10, -22));
+            costcoInteriorGroup.add(createPalletRack(10, -22));
+
+            // Ceiling Lights
+            const ceilingLightMat = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
+            for(let z=-20; z<=0; z+=10) {
+                const cl = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 1), ceilingLightMat);
+                cl.position.set(0, 12, z);
+                costcoInteriorGroup.add(cl);
+            }
+
+            scene.add(costcoInteriorGroup);
+
+            // Characters
+            cashier.position.set(3, 0, -11.5); cashier.rotation.y = 0; cashier.visible = true; 
+            player.position.set(0, 0, 5); player.rotation.y = Math.PI;
+            
+            // Camera
+            camera.position.set(0, 5, 12); camera.lookAt(0, 2, -10);
+        }
+
+        function update(dt) {
+            if (isCostcoApproach) {
+                 // Run towards building
+                 player.position.z -= 10 * dt;
+                 // Camera follows
+                 camera.position.z = player.position.z + 10;
+                 // Anim legs
+                 const t = Date.now() * 0.02;
+                 player.userData.legL.rotation.x = Math.sin(t) * 1.2;
+                 player.userData.legR.rotation.x = Math.sin(t + Math.PI) * 1.2;
+                 
+                 if (player.position.z < -50) {
+                     isCostcoApproach = false;
+                     startCostcoEnding(); // Trigger Interior
+                 } 
+                 return;
+            }
+
+            if (isCostcoEnding) {
+                if (isDraggingOut) {
+                    // Drag Out Sequence
+                    if (!guardsGrabbed) {
+                        // Move guards closer
+                        const speed = 5 * dt;
+                        securityL.position.lerp(new THREE.Vector3(player.position.x - 0.8, 0, player.position.z), speed);
+                        securityR.position.lerp(new THREE.Vector3(player.position.x + 0.8, 0, player.position.z), speed);
+                        
+                        if (securityL.position.distanceTo(player.position) < 1.5) {
+                            guardsGrabbed = true;
+                            // Attach player visually (lift him up a bit)
+                            player.position.y = 0.5;
+                            player.rotation.z = 0.2; // Tilt
+                        }
+                    } else {
+                        // Drag away
+                        const dragSpeed = 3 * dt;
+                        player.position.z += dragSpeed;
+                        securityL.position.z += dragSpeed;
+                        securityR.position.z += dragSpeed;
+                        
+                        // Walk anim for guards
+                        const t = Date.now() * 0.02;
+                        player.userData.legL.rotation.x = Math.sin(t*2); // Flailing legs
+                        player.userData.legR.rotation.x = Math.cos(t*2);
+                        
+                        if (player.position.z > 15) {
+                             showVictory(); // Finally show the Banned screen
+                        }
+                    }
+                    return;
+                }
+
+                if (player.position.z > -7) { // Adjusted stopping distance
+                    player.position.z -= 5 * dt; 
+                    const time = Date.now() * 0.02; 
+                    player.userData.legL.rotation.x = Math.sin(time) * 1.2; 
+                    player.userData.legR.rotation.x = Math.sin(time + Math.PI) * 1.2; 
+                } else { 
+                    // Stopped at counter
+                    player.userData.legL.rotation.x = 0; 
+                    player.userData.legR.rotation.x = 0; 
+                    if (!waitingForOrder && !isCutscene) { 
+                        waitingForOrder = true; 
+                        interactionPrompt.style.display = 'block'; 
+                    } 
+                }
+                
+                if (isCutscene) updateCutscene(dt);
+                return;
+            }
+            if (isCutscene) { updateCutscene(dt); return; }
+            if (isPaused) return;
+
+            if (damageCooldown > 0) { damageCooldown -= dt; playerMeshGroup.visible = Math.floor(Date.now() / 100) % 2 === 0; if (damageCooldown <= 0) { damageCooldown = 0; playerMeshGroup.visible = true; damageOverlay.classList.remove('damage-active'); } }
+            if (isInvincible) { invincibilityTimer -= dt; if (invincibilityTimer <= 0) { isInvincible = false; fuegoOverlay.classList.remove('fuego-active'); showPopup("FUEGO OVER", "#FFF"); } }
+
+            const moveDist = currentSpeed * dt; score += moveDist * 0.5;
+            const currentLvl = LEVELS[currentLevelIdx]; const nextLvlDist = currentLvl.length; let progress = Math.min(100, (score / nextLvlDist) * 100); progressFill.style.width = progress + "%";
+
+            if (score >= nextLvlDist) { score = 0; if (currentLevelIdx === LEVELS.length - 1) { startCostcoApproach(); } else { nextLevel(); } return; }
+            
+            // Standard Updates
+            groundChunks.forEach(chunk => { chunk.position.z += moveDist; });
+            if(groundChunks[0].position.z > 20) {
+                const oldChunk = groundChunks.shift();
+                scene.remove(oldChunk);
+                spawnGroundChunk(groundChunks[groundChunks.length-1].position.z - 20);
+            }
+
+            if (Math.random() < 0.06) { 
+                const lastObs = obstacles[obstacles.length - 1];
+                if (!lastObs || lastObs.position.z > -35) {
+                    const lane = Math.floor(Math.random() * 3) - 1; 
+                    createWall(-60, lane);
+                    if(Math.random() > 0.5) {
+                        let freeLane = (lane === 0) ? 1 : 0;
+                        const type = Math.random() > 0.9 ? 'chili' : 'water';
+                        createCollectible(type, -60, freeLane);
+                    }
+                }
+            }
+
+            obstacles.forEach((obs, i) => {
+                obs.position.z += moveDist;
+                const isHigh = obs.userData.isHigh;
+                if (isHigh) {
+                    obs.userData.colliderBox.setFromCenterAndSize(new THREE.Vector3(obs.position.x, 2.5, obs.position.z), new THREE.Vector3(2.0, 1.0, 0.2));
+                } else {
+                    const isTall = obs.userData.colliderBox.max.y > 2.0;
+                    if (isTall) {
+                        obs.userData.colliderBox.setFromCenterAndSize(new THREE.Vector3(obs.position.x, 2.5, obs.position.z), new THREE.Vector3(1.8, 5.0, 0.2));
+                    } else {
+                        obs.userData.colliderBox.setFromCenterAndSize(new THREE.Vector3(obs.position.x, 0.25, obs.position.z), new THREE.Vector3(2.0, 0.5, 0.2));
+                    }
+                }
+                if (!isInvincible && damageCooldown <= 0) {
+                    const playerBox = new THREE.Box3();
+                    const pCenter = player.position.clone();
+                    const boxBottom = player.userData.isSliding ? pCenter.y + 0.5 : pCenter.y + 1.7;
+                    const boxH = player.userData.isSliding ? 0.6 : 2.6;
+                    playerBox.setFromCenterAndSize(new THREE.Vector3(pCenter.x, boxBottom, pCenter.z), new THREE.Vector3(0.4, boxH, 0.4));
+                    if(playerBox.intersectsBox(obs.userData.colliderBox)) takeDamage();
+                } else if (isInvincible) {
+                    const smashBox = new THREE.Box3().setFromCenterAndSize(player.position, new THREE.Vector3(1, 3, 1));
+                    if(smashBox.intersectsBox(obs.userData.colliderBox)) {
+                        spawnSmashEffect(obs.position.x, 1, obs.position.z);
+                        scene.remove(obs); obstacles.splice(i, 1); showPopup("SMASH!", "#ff0000");
+                    }
+                }
+                if(obs.position.z > 10) { scene.remove(obs); obstacles.splice(i, 1); }
+            });
+
+            collectibles.forEach((col, i) => {
+                col.position.z += moveDist;
+                col.rotation.y += dt * 3;
+                if(Math.abs(col.position.z - player.position.z) < 1.5 && Math.abs(col.position.x - player.position.x) < 1.0) {
+                    if (col.userData.type === 'water') { 
+                        score += 1000; // 10x Points!
+                        showPopup("+1000", "#00BFFF"); 
+                    } 
+                    else { 
+                        isInvincible = true; 
+                        invincibilityTimer = 5.0; 
+                        fuegoOverlay.classList.add('fuego-active'); 
+                        showPopup("FUEGO MODE!", "#FF0000"); 
+                    }
+                    scene.remove(col); collectibles.splice(i, 1);
+                } else if(col.position.z > 10) { scene.remove(col); collectibles.splice(i, 1); }
+            });
+
+            decorations.forEach((dec, i) => {
+                dec.position.z += moveDist;
+                if(dec.position.z > 10) { scene.remove(dec); decorations.splice(i, 1); }
+            });
+
+            particles.forEach((p, i) => {
+                p.life -= dt * 2;
+                p.mesh.position.add(new THREE.Vector3(p.vx, p.vy, p.vz));
+                p.mesh.scale.setScalar(p.life);
+                if(p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); }
+            });
+
+            const targetX = targetLane * LANE_WIDTH;
+            player.position.x += (targetX - player.position.x) * 15 * dt;
+            playerMeshGroup.rotation.z = (player.position.x - targetX) * -0.1;
+            player.userData.velocity.y -= 40 * dt;
+            player.position.y += player.userData.velocity.y * dt;
+
+            if (player.position.y < 0) {
+                if(!player.userData.isGrounded) spawnDust(player.position.x, 0, player.position.z);
+                player.position.y = 0;
+                player.userData.velocity.y = 0;
+                player.userData.isGrounded = true;
+                player.userData.jumpCount = 0;
+            }
+
+            if (player.userData.isSliding) {
+                player.userData.slideTimer -= dt;
+                playerMeshGroup.scale.y = 0.4; playerMeshGroup.position.y = -0.5;
+                if(player.userData.slideTimer <= 0) {
+                    player.userData.isSliding = false; playerMeshGroup.scale.y = 1; playerMeshGroup.position.y = 0;
+                }
+            }
+
+            const t = Date.now() * 0.015 * (currentSpeed/15);
+            if (player.userData.isGrounded && !player.userData.isSliding) {
+                player.userData.legL.rotation.x = Math.sin(t) * 1.2;
+                player.userData.legR.rotation.x = Math.sin(t + Math.PI) * 1.2;
+            }
+            
+            scoreDisplay.innerText = Math.floor(score) + "m";
+        }
+
+        function takeDamage() {
+            lives--; updateLivesDisplay();
+            if (lives <= 0) handleGameOver();
+            else {
+                damageCooldown = 2.0; 
+                damageOverlay.classList.add('damage-active');
+                showPopup("OUCH!", "#ff0000");
+            }
+        }
+
+        function handleGameOver() {
+            isPlaying = false; cancelAnimationFrame(animationId); gameOverScreen.classList.remove('hidden');
+        }
+
+        function animate() {
+            if (!isPlaying) return;
+            const now = performance.now();
+            const dt = Math.min((now - lastTime) / 1000, 0.1);
+            lastTime = now;
+            update(dt);
+            renderer.render(scene, camera);
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function onKeyDown(e) {
+            if (!isPlaying) return;
+            if (isCutscene) { advanceDialogue(); return; }
+            if (waitingForOrder && e.code === 'KeyE') {
+                 waitingForOrder = false;
+                 interactionPrompt.style.display = 'none';
+                 isCutscene = true; currentDialogueQueue = DIALOGUE_ENDING; currentDialogueIndex = 0; showNextDialogueLine();
+            }
+            if (isPaused) return;
+            switch (e.code) {
+                case 'ArrowLeft': case 'KeyA': changeLane(-1); break;
+                case 'ArrowRight': case 'KeyD': changeLane(1); break;
+                case 'ArrowUp': case 'KeyW': case 'Space': jump(); break;
+                case 'ArrowDown': case 'KeyS': slide(); break;
+            }
+        }
+        
+        function handleSwipe(sx, sy, ex, ey) {
+            if (!isPlaying || isPaused) return;
+            const dx = ex - sx; const dy = ey - sy;
+            if (Math.abs(dx) > Math.abs(dy)) { dx > 30 ? changeLane(1) : dx < -30 ? changeLane(-1) : null; }
+            else { dy < -30 ? jump() : dy > 30 ? slide() : null; }
+        }
+        function changeLane(dir) {
+            targetLane += dir; if (targetLane < -1) targetLane = -1; if (targetLane > 1) targetLane = 1;
+        }
+        function jump() {
+            if (player.userData.isGrounded) {
+                player.userData.velocity.y = 14; player.userData.isGrounded = false; player.userData.jumpCount = 1; spawnDust(player.position.x, 0, player.position.z);
+            } else if (player.userData.jumpCount < 2) {
+                player.userData.velocity.y = 14; player.userData.jumpCount = 2; spawnDust(player.position.x, player.position.y, player.position.z);
+            }
+        }
+        function slide() {
+            if (player.userData.isGrounded && !player.userData.isSliding) {
+                player.userData.isSliding = true; player.userData.slideTimer = 1.0; spawnDust(player.position.x, 0, player.position.z);
+            } else if (!player.userData.isGrounded) { player.userData.velocity.y = -20; }
+        }
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function updateLevelDisplay() {
+            levelDisplay.innerText = `${LEVELS[currentLevelIdx].id}: ${LEVELS[currentLevelIdx].name}`;
+        }
+
+        function updateLivesDisplay() {
+            let hearts = ""; 
+            for(let i=0; i<lives; i++) hearts += "❤️";
+            livesDisplay.innerText = hearts;
+        }
+
+        function showVictory() {
+            isPlaying = false;
+            victoryScreen.classList.remove('hidden');
+        }
+        
+        function resetLevel() {
+             obstacles.forEach(o => scene.remove(o)); obstacles = []; 
+             decorations.forEach(d => scene.remove(d)); decorations = []; 
+             collectibles.forEach(c => scene.remove(c)); collectibles = []; 
+             particles.forEach(p => scene.remove(p.mesh)); particles = []; 
+             targetLane = 0; 
+             const lvl = LEVELS[currentLevelIdx]; 
+             currentSpeed = lvl.speed; 
+             scene.background.setHex(lvl.color); 
+             scene.fog.color.setHex(lvl.fog); 
+             if (currentLevelIdx === 3 || currentLevelIdx === 4) { cityLights.visible = true; } else { cityLights.visible = false; } 
+             groundChunks.forEach(g => scene.remove(g)); groundChunks = []; 
+             for(let i=0; i<15; i++) spawnGroundChunk(-i*20); 
+             if (costcoExteriorGroup) { scene.remove(costcoExteriorGroup); costcoExteriorGroup = null; }
+             if (costcoInteriorGroup) { scene.remove(costcoInteriorGroup); costcoInteriorGroup = null; }
+        }
+
+        function nextLevel() { currentLevelIdx++; if (currentLevelIdx >= LEVELS.length) { startCostcoApproach(); return; } startCutscene(LEVELS[currentLevelIdx].cutscene); updateLevelDisplay(); }
+        
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            victoryScreen.classList.add('hidden');
+            
+            currentLevelIdx = 0; score = 0; lives = 3;
+            updateLivesDisplay();
+            isInvincible = false;
+            fuegoOverlay.classList.remove('fuego-active');
+
+            startCutscene(LEVELS[0].cutscene);
+        }
+
+        init();
+    })(); // IIFE END
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chandler's Freedom Glizzy Run</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading">Loading Chandler's Journey...</div>
+
+    <!-- Visual Overlays -->
+    <div id="fuego-overlay"></div>
+    <div id="damage-overlay"></div>
+
+    <!-- Dev Menu -->
+    <div id="dev-layer">
+        <button id="debug-toggle-btn" class="dev-btn">🛠️ DEV MENU</button>
+        <div id="debug-menu-box" class="dev-menu hidden">
+            <button class="dev-btn" data-level="0">1. Intro (Home)</button>
+            <button class="dev-btn" data-level="1">2. Desert (Coyote)</button>
+            <button class="dev-btn" data-level="2">3. River (Gator)</button>
+            <button class="dev-btn" data-level="3">4. The Wall (Border)</button>
+            <button class="dev-btn" data-level="4">5. Suburbia (Street)</button>
+            <button class="dev-btn" data-level="ending" style="color: #00ff00;">6. Jump to Ending</button>
+        </div>
+    </div>
+
+    <!-- Speech Bubbles Container -->
+    <div id="bubble-container"></div>
+
+    <!-- Cutscene UI -->
+    <div id="cutscene-ui" class="hidden">
+        <div class="auto-indicator">AUTO PLAYING</div>
+        <div class="tap-hint">TAP TO SPEED UP ▶</div>
+    </div>
+
+    <!-- Interaction Prompt -->
+    <div id="interaction-prompt">PRESS [E] TO ORDER</div>
+
+    <!-- HUD Layer -->
+    <div id="ui-layer" class="hidden">
+        <div class="hud">
+            <div class="hud-box">
+                <div class="stat-label">CHAPTER</div>
+                <div id="level-display" style="color: #FFD700">1: THE VILLAGE</div>
+                <div id="level-progress"><div id="progress-fill"></div></div>
+            </div>
+            <div class="hud-box">
+                <div class="stat-label">LIVES</div>
+                <div id="lives-display">❤️❤️❤️</div>
+            </div>
+            <div class="hud-box" id="score-container">
+                <div class="stat-label">DISTANCE</div>
+                <div id="score-display">0m</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen-modal hidden">
+        <h1>CHANDLER'S RUN</h1>
+        <p>Quest for the Freedom Glizzy</p>
+        <div class="controls-hint">
+            <p><span class="key">A</span> <span class="key">D</span> Dodge</p>
+            <p><span class="key">W</span> Jump (x2) | <span class="key">S</span> Slide</p>
+        </div>
+        <div class="difficulty-selector">
+            <p style="color: #aaa; font-size: 10px; margin-bottom: 8px;">SELECT DIFFICULTY:</p>
+            <div class="difficulty-buttons">
+                <button class="diff-btn" data-difficulty="easy">EASY</button>
+                <button class="diff-btn selected" data-difficulty="normal">NORMAL</button>
+                <button class="diff-btn" data-difficulty="hard">HARD</button>
+                <button class="diff-btn" data-difficulty="insane">INSANE</button>
+            </div>
+        </div>
+        <button id="start-btn" class="main-btn">START STORY</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen-modal hidden">
+        <h1 style="color: #ff4444;">CAUGHT!</h1>
+        <p id="final-reason" style="color:#aaa; font-size:10px;">You ran out of lives.</p>
+        <p style="margin-top:10px">No Glizzy for you today.</p>
+        <button id="restart-btn" class="main-btn">TRY AGAIN</button>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="screen-modal hidden">
+        <h1 style="color: #ff4444;">EJECTED!</h1>
+        <div style="font-size:40px; margin: 10px;">👮‍♂️🚫</div>
+        <p>Security dragged you out.</p>
+        <p style="font-size:10px; color:#aaa; margin-top:5px;">You were 25 cents short.</p>
+        <button id="restart-victory-btn" class="main-btn">CRY & RESTART</button>
+    </div>
+
+    <!-- Pause Menu (New) -->
+    <div id="pause-screen" class="screen-modal hidden">
+        <h1>PAUSED</h1>
+        <button id="resume-btn" class="main-btn">RESUME</button>
+        <button id="settings-btn" class="main-btn" style="background: #666;">SETTINGS</button>
+        <button id="quit-btn" class="main-btn" style="background: #333;">QUIT TO MENU</button>
+    </div>
+
+    <!-- Settings Screen (New) -->
+    <div id="settings-screen" class="screen-modal hidden">
+        <h1>SETTINGS</h1>
+        <div class="setting-row">
+            <label>Music</label>
+            <input type="range" id="music-volume" min="0" max="100" value="70">
+        </div>
+        <div class="setting-row">
+            <label>SFX</label>
+            <input type="range" id="sfx-volume" min="0" max="100" value="100">
+        </div>
+        <button id="settings-back-btn" class="main-btn">BACK</button>
+    </div>
+
+    <!-- Game Entry Point -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
